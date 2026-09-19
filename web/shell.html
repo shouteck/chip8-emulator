@@ -24,8 +24,9 @@
     .keys {
       margin-top: 18px;
       display: grid;
-      grid-template-columns: repeat(4, 44px);
-      gap: 6px;
+      grid-template-columns: 44px auto;
+      gap: 8px;
+      align-items: center;
     }
     .key {
       border: 1px solid #555;
@@ -36,6 +37,10 @@
       font-size: 14px;
       color: #ccc;
       background: #1e1e2c;
+    }
+    .lbl {
+      font-size: 14px;
+      color: #999;
     }
     .hint {
       margin-top: 14px;
@@ -50,14 +55,12 @@
 <body>
   <h1>CHIP-8 Emulator</h1>
   <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-  <div class="hint">Click the screen first, then use these keys:</div>
+  <div class="hint">Click the screen, then move your paddle:</div>
   <div class="keys">
-    <div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div>
-    <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div>
-    <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div>
-    <div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div>
+    <div class="key">1</div><span class="lbl">up</span>
+    <div class="key">Q</div><span class="lbl">down</span>
   </div>
-  <div class="hint"><b>Pong:</b> 1 / Q = left paddle &nbsp;·&nbsp; 4 / R = right paddle</div>
+  <div class="hint">The right paddle is computer-controlled.</div>
   <script>
     var Module = { canvas: document.getElementById('canvas') };
   </script>
