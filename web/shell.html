@@ -23,23 +23,41 @@
     }
     .keys {
       margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, 44px);
+      gap: 6px;
+    }
+    .key {
+      border: 1px solid #555;
+      border-radius: 5px;
+      padding: 8px 0;
+      text-align: center;
       font-family: ui-monospace, monospace;
       font-size: 14px;
-      line-height: 1.7;
-      text-align: center;
-      color: #999;
-      white-space: pre;
+      color: #ccc;
+      background: #1e1e2c;
     }
+    .hint {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #999;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .hint b { color: #ccc; }
   </style>
 </head>
 <body>
   <h1>CHIP-8 Emulator</h1>
   <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-  <div class="keys">CHIP-8   Keyboard
-1 2 3 C   1 2 3 4
-4 5 6 D   Q W E R
-7 8 9 E   A S D F
-A 0 B F   Z X C V</div>
+  <div class="hint">Click the screen first, then use these keys:</div>
+  <div class="keys">
+    <div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div>
+    <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div>
+    <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div>
+    <div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div>
+  </div>
+  <div class="hint"><b>Pong:</b> 1 / Q = left paddle &nbsp;·&nbsp; 4 / R = right paddle</div>
   <script>
     var Module = { canvas: document.getElementById('canvas') };
   </script>
