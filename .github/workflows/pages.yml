@@ -31,7 +31,7 @@ jobs:
       - name: Build WebAssembly demo
         run: |
           mkdir -p dist
-          emcc -std=c++17 -O2 \
+          em++ -std=c++17 -O2 \
             -Iinclude src/main.cpp src/chip8.cpp \
             -sUSE_SDL=2 \
             --preload-file roms \
