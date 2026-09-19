@@ -1,7 +1,7 @@
 # CHIP-8 Emulator
 
-**Play it in your browser:** https://<username>.github.io/<repo>/ *(auto-deployed
-to GitHub Pages by CI — see `.github/workflows/pages.yml`)*
+**Play it in your browser:** https://shouteck.github.io/chip8-emulator/
+*(auto-deployed to GitHub Pages by CI — see `.github/workflows/pages.yml`)*
 
 A CHIP-8 interpreter written in C++17 with SDL2. Runs original CHIP-8 ROMs
 (Pong, Tetris, Space Invaders) and passes the Timendus chip8-test-suite
