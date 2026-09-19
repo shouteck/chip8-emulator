@@ -87,7 +87,7 @@ The WebAssembly build runs in CI (`.github/workflows/pages.yml`) and deploys
 the playable demo to GitHub Pages on every push to `main`. Locally it would be:
 
 ```
-emcc -std=c++17 -O2 -Iinclude src/main.cpp src/chip8.cpp \
+em++ -std=c++17 -O2 -Iinclude src/main.cpp src/chip8.cpp \
   -sUSE_SDL=2 --preload-file roms --shell-file web/shell.html \
   -o dist/index.html
 ```
@@ -111,13 +111,52 @@ Verified against the Timendus chip8-test-suite:
 
 ## Design decisions & quirks
 
-<!-- TODO: this is the section to write yourself — the interesting decisions:
-     - shifts (8XY6/8XYE) operate on V[x] directly (modern quirk), not V[y]
-     - FX55/FX65 leave I unchanged (modern quirk)
-     - sprites wrap at screen edges
-     - Cowgod's spec says "Vx > Vy" for 8XY5/8XY7 flag, but NOT-borrow
-       semantics require >= (verified against test suite / VIP behavior)
-     - flag ordering: all operand reads happen before writes so VF works
-       correctly as an operand (x or y == F)
-     - FX0A implemented as CPU stall + keydown release, not a blocking loop
--->
+CHIP-8 has no single authoritative spec — the original COSMAC VIP interpreter
+and the later SUPER-CHIP implementations disagree on several instructions.
+These are the dialect choices made here, plus the spec ambiguities found
+along the way.
+
+**Flag semantics (`8XY5` / `8XY7`).** Cowgod's reference says "if Vx > Vy
+then VF = 1" — but the same line defines VF as *NOT borrow*, and equal
+operands don't borrow. The correct semantics are `Vx >= Vy`, matching the
+original VIP behavior. Verified empirically: the flags test suite explicitly
+checks `10 - 10` and expects VF = 1.
+
+**VF as an operand.** Any `8XY?` instruction can use `VF` as its `x` or `y`
+register, which creates a subtle ordering hazard: writing `VF` before reading
+the operands destroys the input, and writing the result after the flag loses
+the flag. All arithmetic/shift cases snapshot operands into temporaries first,
+then write the result, then write `VF` last — so the flag always wins when
+`x == 0xF`. This was caught by the flags test, not by any game.
+
+**Shift quirk (`8XY6` / `8XYE`).** The VIP shifted `V[y]` into `V[x]`; most
+modern interpreters shift `V[x]` in place. This implementation uses the modern
+in-place form, which is what current ROMs expect.
+
+**Memory dump quirk (`FX55` / `FX65`).** The VIP incremented `I` by `x+1`
+after the dump; modern ROMs expect `I` unchanged. Left unchanged here.
+
+**Sprite wrapping (`DXYN`).** Sprites wrap at screen edges via modulo
+coordinates, per the original spec.
+
+**Blocking input (`FX0A`).** "Wait for keypress" can't actually block — a
+blocking `cycle()` would starve the SDL event pump and the keypress could
+never arrive. Implemented as a machine-level stall: `cycle()` returns early
+while a flag is set, and the next `keyDown()` deposits the key and releases
+the wait. The emulated CPU freezes; the host keeps running.
+
+**Decoupled clocks.** Instruction throughput (~600/sec, tunable) and timer
+rate (fixed 60 Hz, tied to frame time) run on independent schedules — games
+program against wall-clock timers regardless of CPU speed. On WebAssembly
+this falls out naturally: `requestAnimationFrame` paces `tickTimers()` at
+60 Hz for free.
+
+**Testing approach.** Correctness is verified against the Timendus
+chip8-test-suite rather than "games seem to run." The flags test caught the
+`VF`-operand ordering bugs above — failures no amount of Pong would have
+exposed.
+
+**Known limitation.** Sprites flicker during animation: `DXYN` updates the
+framebuffer mid-frame and intermediate erase-redraw states are visible.
+Classic interpreters sync draws to vblank; left as-is since the flicker is
+instructive — it's literally the XOR erase/redraw cycle made visible.
